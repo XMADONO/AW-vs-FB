@@ -1,0 +1,23 @@
+---
+title: "Fitbit tracker EDA"
+author: "Xena Adono"
+date: '2023-04-21'
+output: html_document
+---
+
+```{r}
+library(readr)
+library(tidyverse)
+library(DataExplorer)
+
+FB.df = read.csv(file="./data_FB.csv", header=TRUE, sep=",")
+
+#change data type to Double/Factors
+df = FB.df %>% mutate_at(vars(gender, activity),factor)
+
+df
+df %>% glimpse()
+df %>% create_report(
+  output_file = "FB_EDA_report" , output_dir = ("/Users/XenaA/Desktop/STAT 574 S23/Project/R"),
+  y = "activity", report_title = "Fitbit EDA")
+```

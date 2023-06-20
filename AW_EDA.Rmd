@@ -1,0 +1,24 @@
+---
+title: "Apple Watch tracker EDA"
+author: "Xena Adono"
+date: '2023-04-21'
+output: html_document
+---
+
+```{r}
+library(readr)
+library(tidyverse)
+library(DataExplorer)
+
+AW.df = read.csv(file="./data_AW.csv", header=TRUE, sep=",")
+
+#change data type to Double/Factors
+df = AW.df %>% mutate_at(vars(gender, activity),factor)
+
+df
+df %>% glimpse()
+df %>% create_report(
+  output_file = "AW_EDA_report" , output_dir = ("/Users/XenaA/Desktop/STAT 574 S23/Project/R"),
+  y = "activity", report_title = "Apple Watch EDA")
+```
+

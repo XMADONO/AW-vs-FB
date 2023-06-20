@@ -1,0 +1,175 @@
+---
+title: "Classification Project AppleWatch and FitBit"
+author: "Xena Adono"
+date: "4/20/2023"
+output: html_document
+---
+
+## APPLE WATCH 
+
+## Inputting Data
+```{r, message = FALSE, warning=FALSE}
+library(readr)
+library(tidyverse)
+library(skimr)
+
+AW.df = read.csv(file="./data_AW.csv", header=TRUE, sep=",")
+skim(AW.df)
+
+#change data type to Factors
+df = AW.df %>% mutate_at(vars(activity, gender),factor)
+glimpse(df)
+```
+
+
+## Random Forest Multinomial Classifier 
+```{r, message = FALSE, warning=FALSE}
+#splitting data into 80% training and 20% testing sets 
+n = nrow(df)
+prop = 0.8
+set.seed(123611)
+train_id = sample(1:n, size = round(n*prop), replace = FALSE)
+test_id = (1:n)[-which(1:n %in% train_id)]
+
+train_set = df[train_id,]
+test_set = df[test_id,]
+
+#fitting random forest multinomial classifier
+library(randomForest)
+p = ncol(train_set) - 1
+set.seed(123611)
+RF_fit = randomForest(activity ~., data = train_set, mtry = round(sqrt(p)), importance = TRUE)
+
+#displaying feature importance 
+v.important = importance(RF_fit,type=2)
+print(v.important)
+varImpPlot(RF_fit, main = "Variable Importance")
+
+#prediction accuracy for testing data
+library(caret)
+predict.class = predict(RF_fit, test_set, type = "class")
+confusionMatrix( predict.class, test_set$activity)
+```
+
+
+
+## KNN Mutlinomial Classifier
+```{r, message = FALSE, warning=FALSE}
+#splitting data into 80% training and 20% testing sets
+set.seed(123857)
+sample <- sample(c(TRUE, FALSE), nrow(df), replace=TRUE, prob=c(0.8,0.2))
+train<- df[sample,]
+test<- df[!sample,]
+
+train.x<- data.matrix(train[-16])
+train.y<- data.matrix(train[16])
+test.x<- data.matrix(test[-16])
+test.y<- data.matrix(test[16])
+
+#fitting KNN multinomial classifier
+#k=3 reasonably maximizes prediction accuracy for testing set
+library(caret)
+knn.mclass<- knnreg(train.x, train.y, k=3)
+
+
+# Compute prediction accuracy for testing data
+pred.y = round(predict(knn.mclass, test.x), digits=0)
+accuracy = round(1-mean(test.y != pred.y), digits=4)
+
+# Compute confusion matrix
+confusion = confusionMatrix(data = factor(pred.y, levels = c(1, 2, 3, 4)),
+                             reference = factor(test.y, levels = c(1, 2, 3, 4)))
+
+# Compute F1 score
+F1_score = 2 * (confusion$byClass[3] * confusion$byClass[4]) /
+  (confusion$byClass[3] + confusion$byClass[4])
+
+cat("Prediction accuracy is", accuracy, "\n")
+cat("F1 score is", F1_score, "\n")
+```
+
+
+
+
+
+## FITBIT
+## inputting data
+```{r, message = FALSE, warning=FALSE}
+library(readr)
+library(tidyverse)
+library(skimr)
+
+FB.df = read.csv(file="./data_FB.csv", header=TRUE, sep=",")
+skim(FB.df)
+
+#change data type to Double/Factors
+df = FB.df %>% mutate_at(vars(activity, gender),factor)
+glimpse(df)
+```
+
+
+## Random Forest Multinomial Classifier 
+```{r, message = FALSE, warning=FALSE}
+#splitting data into 80% training and 20% testing sets 
+n = nrow(df)
+prop = 0.8
+set.seed(123611)
+train_id = sample(1:n, size = round(n*prop), replace = FALSE)
+test_id = (1:n)[-which(1:n %in% train_id)]
+
+train_set = df[train_id,]
+test_set = df[test_id,]
+
+#fitting random forest multinomial classifier
+library(randomForest)
+p = ncol(train_set) - 1
+set.seed(123611)
+RF_fit = randomForest(activity ~., data = train_set, mtry = round(sqrt(p)), importance = TRUE)
+
+#displaying feature importance 
+v.important = importance(RF_fit,type=2)
+print(v.important)
+varImpPlot(RF_fit, main = "Variable Importance")
+
+#prediction accuracy for testing data
+library(caret)
+predict.class = predict(RF_fit, test_set, type = "class")
+confusionMatrix( predict.class, test_set$activity)
+```
+
+
+
+## KNN Mutlinomial Classifier
+```{r, message = FALSE, warning=FALSE}
+#splitting data into 80% training and 20% testing sets
+set.seed(123857)
+sample <- sample(c(TRUE, FALSE), nrow(df), replace=TRUE, prob=c(0.8,0.2))
+train<- df[sample,]
+test<- df[!sample,]
+
+train.x<- data.matrix(train[-16])
+train.y<- data.matrix(train[16])
+test.x<- data.matrix(test[-16])
+test.y<- data.matrix(test[16])
+
+#fitting KNN mutlinmoial classifier
+#k=3 reasonably maximizes prediction accuracy for testing set
+library(caret)
+knn.mclass<- knnreg(train.x, train.y, k=3)
+
+# Compute prediction accuracy for testing data
+pred.y = round(predict(knn.mclass, test.x), digits=0)
+accuracy = round(1-mean(test.y != pred.y), digits=4)
+
+# Compute confusion matrix
+confusion = confusionMatrix(data = factor(pred.y, levels = c(1, 2, 3, 4)),
+                             reference = factor(test.y, levels = c(1, 2, 3, 4)))
+
+# Compute F1 score
+F1_score = 2 * (confusion$byClass[3] * confusion$byClass[4]) /
+  (confusion$byClass[3] + confusion$byClass[4])
+
+cat("Prediction accuracy is", accuracy, "\n")
+cat("F1 score is", F1_score, "\n")
+```
+
